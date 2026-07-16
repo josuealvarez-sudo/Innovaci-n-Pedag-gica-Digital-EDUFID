@@ -128,15 +128,25 @@
         }
         .login-box h2 { color: var(--verde-udea); margin-bottom: 8px; font-size: 1.5rem; text-align: center; }
         .login-box .sub { text-align: center; color: #3a5a37; margin-bottom: 24px; font-size: 0.9rem; }
-        .login-box .hint {
-            text-align: center; color: #7a9a77; margin: -12px 0 16px; font-size: 0.78rem;
+
+        /* --- Pantalla de selección de acceso --- */
+        .opciones-acceso { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+        .opcion-acceso {
+            display: flex; align-items: center; gap: 16px; width: 100%; padding: 18px 20px;
+            border: 2px solid var(--gris-borde); border-radius: var(--radius-sm); background: var(--blanco);
+            cursor: pointer; transition: 0.2s; font-family: inherit; text-align: left;
         }
-        .login-box .btn-invitado {
-            display: block; text-align: center; color: var(--verde-udea); margin-top: 16px;
-            font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
-            background: none; border: none; font-family: inherit; width: 100%; padding: 8px; border-radius: 8px;
+        .opcion-acceso:hover { border-color: var(--verde-udea); background: var(--verde-claro); transform: translateY(-2px); }
+        .opcion-acceso i { font-size: 1.4rem; color: var(--verde-udea); flex-shrink: 0; width: 28px; text-align: center; }
+        .opcion-acceso .opcion-texto strong { display: block; font-size: 1rem; color: var(--texto-oscuro); }
+        .opcion-acceso .opcion-texto span { font-size: 0.82rem; color: #5a7a57; }
+
+        .login-box .btn-volver {
+            display: flex; align-items: center; gap: 8px; color: var(--verde-udea); margin-bottom: 18px;
+            font-weight: 500; cursor: pointer; font-size: 0.88rem; transition: 0.2s;
+            background: none; border: none; font-family: inherit; padding: 6px 4px; border-radius: 8px;
         }
-        .login-box .btn-invitado:hover { background: var(--verde-claro); }
+        .login-box .btn-volver:hover { background: var(--verde-claro); }
         .login-box label { display: block; font-weight: 500; margin-bottom: 4px; font-size: 0.9rem; }
         .login-box input {
             width: 100%; padding: 12px 16px; border: 2px solid var(--gris-borde);
@@ -490,16 +500,36 @@
     <!-- ===== LOGIN OVERLAY ===== -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
-            <h2><i class="fas fa-lock" style="margin-right: 10px;"></i>Acceso Admin</h2>
-            <p class="sub">Ingresa tus credenciales para editar el contenido</p>
-            <p class="hint">Demo: usuario <strong>admin</strong> · contraseña <strong>edufid2026</strong></p>
-            <label for="loginUser">Usuario</label>
-            <input type="text" id="loginUser" placeholder="admin" autocomplete="username" />
-            <label for="loginPass">Contraseña</label>
-            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
-            <button class="btn-login" onclick="iniciarSesion()"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
-            <button class="btn-invitado" onclick="entrarComoInvitado()"><i class="fas fa-user"></i> Continuar como invitado</button>
-            <div id="loginError" class="error-msg">❌ Usuario o contraseña incorrectos</div>
+
+            <!-- Pantalla 1: elegir tipo de acceso -->
+            <div id="pantallaSeleccion">
+                <h2><i class="fas fa-graduation-cap" style="margin-right: 10px;"></i>Bienvenido</h2>
+                <p class="sub">Elige cómo quieres ingresar</p>
+                <div class="opciones-acceso">
+                    <button type="button" class="opcion-acceso" onclick="entrarComoInvitado()">
+                        <i class="fas fa-user"></i>
+                        <span class="opcion-texto"><strong>Continuar como invitado</strong><span>Explora los temas y recursos del curso</span></span>
+                    </button>
+                    <button type="button" class="opcion-acceso" onclick="mostrarFormularioAdmin()">
+                        <i class="fas fa-user-shield"></i>
+                        <span class="opcion-texto"><strong>Soy administrador</strong><span>Editar y añadir recursos del curso</span></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pantalla 2: formulario de credenciales admin -->
+            <div id="pantallaAdmin" style="display:none;">
+                <button type="button" class="btn-volver" onclick="mostrarSeleccion()"><i class="fas fa-arrow-left"></i> Volver</button>
+                <h2><i class="fas fa-lock" style="margin-right: 10px;"></i>Acceso Admin</h2>
+                <p class="sub">Ingresa tus credenciales para editar el contenido</p>
+                <label for="loginUser">Usuario</label>
+                <input type="text" id="loginUser" autocomplete="username" />
+                <label for="loginPass">Contraseña</label>
+                <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+                <button class="btn-login" onclick="iniciarSesion()"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
+                <div id="loginError" class="error-msg">❌ Usuario o contraseña incorrectos</div>
+            </div>
+
         </div>
     </div>
 
@@ -513,8 +543,8 @@
             </div>
             <div class="badge-ia" id="statusBadge">
                 <i class="fas fa-user"></i> <span id="userStatus">Invitado</span>
-                <button class="btn-logout" id="btnLogout" onclick="cerrarSesion()" style="display:none;">
-                    <i class="fas fa-sign-out-alt"></i>
+                <button class="btn-logout" id="btnCambiarUsuario" onclick="cerrarSesion()" title="Cambiar usuario">
+                    <i class="fas fa-right-left"></i>
                 </button>
             </div>
         </header>
@@ -728,6 +758,26 @@
         // =============================================
         // ===== LOGIN =====
         // =============================================
+        const loginOverlay = document.getElementById('loginOverlay');
+        const pantallaSeleccion = document.getElementById('pantallaSeleccion');
+        const pantallaAdmin = document.getElementById('pantallaAdmin');
+
+        // Muestra la pantalla de "elige cómo ingresar" (invitado / admin)
+        function mostrarSeleccion() {
+            pantallaAdmin.style.display = 'none';
+            pantallaSeleccion.style.display = 'block';
+            document.getElementById('loginError').classList.remove('visible');
+        }
+
+        // Muestra el formulario de usuario/contraseña de admin
+        function mostrarFormularioAdmin() {
+            pantallaSeleccion.style.display = 'none';
+            pantallaAdmin.style.display = 'block';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            setTimeout(() => document.getElementById('loginUser').focus(), 100);
+        }
+
         function iniciarSesion() {
             const user = document.getElementById('loginUser').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
@@ -735,7 +785,7 @@
 
             if (user === ADMIN_USER && pass === ADMIN_PASS) {
                 esAdmin = true;
-                document.getElementById('loginOverlay').classList.add('oculto');
+                loginOverlay.classList.add('oculto');
                 actualizarUIAdmin(true);
                 mostrarToast('Sesión iniciada como administrador', 'success');
             } else {
@@ -746,37 +796,30 @@
 
         function entrarComoInvitado() {
             esAdmin = false;
-            document.getElementById('loginOverlay').classList.add('oculto');
+            loginOverlay.classList.add('oculto');
             actualizarUIAdmin(false);
             mostrarToast('Bienvenido, invitado', 'success');
         }
 
+        // Botón del header: siempre visible, permite volver a elegir invitado/admin
         function cerrarSesion() {
             if (modoEdicion) salirModoEdicion();
-            esAdmin = false;
-            actualizarUIAdmin(false);
-            document.getElementById('loginOverlay').classList.remove('oculto');
-            document.getElementById('loginUser').value = '';
-            document.getElementById('loginPass').value = '';
-            document.getElementById('loginError').classList.remove('visible');
-            mostrarToast('Sesión cerrada', 'success');
+            mostrarSeleccion();
+            loginOverlay.classList.remove('oculto');
         }
 
         function actualizarUIAdmin(admin) {
             const statusEl = document.getElementById('userStatus');
             const badge = document.getElementById('statusBadge');
-            const btnLogout = document.getElementById('btnLogout');
 
             if (admin) {
                 statusEl.textContent = 'Admin';
                 badge.style.background = 'var(--verde-udea)';
                 badge.style.color = 'white';
-                btnLogout.style.display = 'inline-block';
             } else {
                 statusEl.textContent = 'Invitado';
                 badge.style.background = 'var(--verde-claro)';
                 badge.style.color = 'var(--verde-udea)';
-                btnLogout.style.display = 'none';
                 if (modoEdicion) salirModoEdicion();
             }
 
